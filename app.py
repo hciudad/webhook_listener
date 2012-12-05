@@ -35,7 +35,7 @@ def display_recent_webhooks():
     return "<pre>%s</pre>" % "\n".join(fired_webhooks)
 
 
-@app.route('/clear', methods=['GET'])
+@app.route('/clear', methods=['POST'])
 def clear_webhook_list():
     return json.dumps(con.delete(WEBHOOKS_KEY))
 
