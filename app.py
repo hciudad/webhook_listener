@@ -12,6 +12,7 @@ con = Redis.from_url(REDIS_URL)
 
 WEBHOOKS_KEY = 'webhooks'
 
+
 @app.route('/webhook', methods=['POST'])
 def log_webhook():
     ts = datetime.now().strftime('%Y%m%d_%H%M%S')
@@ -32,6 +33,11 @@ def log_webhook():
 def display_recent_webhooks():
     fired_webhooks = con.zrevrangebyscore(WEBHOOKS_KEY, '+inf', '-inf', 0, 200)
     return "<pre>%s</pre>" % "\n".join(fired_webhooks)
+
+
+@app.route('/clear', methods=['GET'])
+def clear_webhook_list():
+    return json.dumps(con.delete(WEBHOOKS_KEY))
 
 if __name__ == '__main__':
     # Bind to PORT if defined, otherwise default to 5000.
