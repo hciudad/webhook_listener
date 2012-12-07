@@ -20,7 +20,7 @@ def log_webhook():
     now = datetime.now()
     score = timegm(now.utctimetuple())
 
-    max_age = now - timedelta(days=1)
+    max_age = now - timedelta(days=3)
     max_age_score = timegm(max_age.utctimetuple())
 
     con.zadd(WEBHOOKS_KEY, **{"%s: %s" % (ts, json.dumps(request.json)): score})
