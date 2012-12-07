@@ -11,6 +11,7 @@ REDIS_URL = os.environ.get('REDISTOGO_URL', 'redis://localhost:6379/')
 con = Redis.from_url(REDIS_URL)
 
 WEBHOOKS_KEY = 'webhooks'
+MAX_AGE = int(os.environ.get('WEBHOOK_LISTENER_MAX_AGE', 5))
 
 
 @app.route('/webhook', methods=['POST'])
@@ -20,7 +21,7 @@ def log_webhook():
     now = datetime.now()
     score = timegm(now.utctimetuple())
 
-    max_age = now - timedelta(days=3)
+    max_age = now - timedelta(days=MAX_AGE)
     max_age_score = timegm(max_age.utctimetuple())
 
     con.zadd(WEBHOOKS_KEY, **{"%s: %s" % (ts, json.dumps(request.json)): score})
