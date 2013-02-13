@@ -2,7 +2,7 @@ from calendar import timegm
 from datetime import datetime, timedelta
 import json
 import os
-from flask import Flask, request
+from flask import Flask, request, redirect, url_for
 from redis import Redis
 
 app = Flask(__name__)
@@ -30,7 +30,12 @@ def log_webhook():
     return 'thanks!'
 
 
-@app.route('/recent', methods=['GET'])
+@app.route('/', methods=['GET'])
+def base():
+    return redirect(url_for('recent-webhooks'))
+
+
+@app.route('/recent', methods=['GET'], endpoint="recent-webhooks")
 def display_recent_webhooks():
     fired_webhooks = con.zrevrangebyscore(WEBHOOKS_KEY, '+inf', '-inf', 0, 200)
     return "<pre>%s</pre>" % "\n".join(fired_webhooks)
