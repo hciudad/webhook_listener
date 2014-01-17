@@ -4,8 +4,10 @@ import json
 import os
 from flask import Flask, request, redirect, url_for
 from redis import Redis
+from wsgi_body_copy import WSGICopyBody
 
 app = Flask(__name__)
+app.wsgi_app = WSGICopyBody(app.wsgi_app)
 
 REDIS_URL = os.environ.get('REDISTOGO_URL', 'redis://localhost:6379/')
 con = Redis.from_url(REDIS_URL)
@@ -24,7 +26,9 @@ def log_webhook():
     max_age = now - timedelta(days=MAX_AGE)
     max_age_score = timegm(max_age.utctimetuple())
 
-    con.zadd(WEBHOOKS_KEY, **{"%s: %s" % (ts, json.dumps(request.json)): score})
+    data = request.environ['body_copy']
+
+    con.zadd(WEBHOOKS_KEY, **{"%s: %s" % (ts, data): score})
     con.zremrangebyscore(WEBHOOKS_KEY, '-inf', '(%s' % max_age_score)
 
     return 'thanks!'
