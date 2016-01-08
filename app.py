@@ -18,6 +18,7 @@ MAX_AGE = int(os.environ.get('WEBHOOK_LISTENER_MAX_AGE', 5))
 
 @app.route('/webhook', methods=['POST'])
 def log_webhook():
+    print request.headers
     ts = datetime.now().strftime('%Y%m%d_%H%M%S')
 
     now = datetime.now()
@@ -27,6 +28,7 @@ def log_webhook():
     max_age_score = timegm(max_age.utctimetuple())
 
     data = request.environ['body_copy']
+    print data
 
     con.zadd(WEBHOOKS_KEY, **{"%s: %s" % (ts, data): score})
     con.zremrangebyscore(WEBHOOKS_KEY, '-inf', '(%s' % max_age_score)
@@ -41,12 +43,14 @@ def base():
 
 @app.route('/recent', methods=['GET'], endpoint="recent-webhooks")
 def display_recent_webhooks():
+    print request.headers
     fired_webhooks = con.zrevrangebyscore(WEBHOOKS_KEY, '+inf', '-inf', 0, 200)
     return "<pre>%s</pre>" % "\n".join(fired_webhooks)
 
 
 @app.route('/clear', methods=['POST'])
 def clear_webhook_list():
+    print request.headers
     return json.dumps(con.delete(WEBHOOKS_KEY))
 
 if __name__ == '__main__':
